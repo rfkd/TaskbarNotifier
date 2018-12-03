@@ -95,7 +95,7 @@ class AppListDialog(QDialog):
         """
 
         self.setWindowTitle("Taskbar Notifier")
-        self.setWindowIcon(QIcon("TaskbarNotifierYellow.png"))
+        self.setWindowIcon(QIcon("icons/Yellow.png"))
         self.setMinimumSize(600, 250)
         self.resize(600, 250)
 
@@ -239,7 +239,7 @@ class MainWindow(QWidget):
         """
 
         self.setWindowTitle("Taskbar Notifier")
-        self.setWindowIcon(QIcon("TaskbarNotifierYellow.png"))
+        self.setWindowIcon(QIcon("icons/Yellow.png"))
         self.setFocusPolicy(Qt.StrongFocus)
         self.setMinimumSize(700, 300)
         self.resize(700, 300)
@@ -332,7 +332,7 @@ class MainWindow(QWidget):
         """
 
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon("TaskbarNotifierGrey.png"))
+        self.tray_icon.setIcon(QIcon("icons/Grey.png"))
         self.tray_icon.activated.connect(self.__on_tray_icon_activated)
         tray_menu = QMenu()
 
@@ -414,15 +414,15 @@ class MainWindow(QWidget):
             if (repeat_toast and not self.timer_toast.isActive()) \
                     or applications_to_be_toasted != self.applications_on_toast:
                 self.tray_icon.showMessage("Taskbar Notifier", "\n".join(applications_to_be_toasted),
-                                           QIcon("TaskbarNotifierYellow.png"))
+                                           QIcon("icons/Yellow.png"))
                 if repeat_toast:
                     self.timer_toast.start(self.repeat_spin.value() * 1000)
 
         # Change the tray icon depending on the notification state
         if len(self.applications_on_toast) > 0 and len(applications_to_be_toasted) == 0:
-            self.tray_icon.setIcon(QIcon("TaskbarNotifierGrey.png"))
+            self.tray_icon.setIcon(QIcon("icons/Grey.png"))
         elif len(self.applications_on_toast) == 0 and len(applications_to_be_toasted) > 0:
-            self.tray_icon.setIcon(QIcon("TaskbarNotifierYellow.png"))
+            self.tray_icon.setIcon(QIcon("icons/Yellow.png"))
 
         self.applications_on_toast = applications_to_be_toasted
 

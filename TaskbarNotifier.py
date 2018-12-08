@@ -211,7 +211,7 @@ class MainWindow(QWidget):
     TIMER_INTERVAL_TOAST_MAX_S = 3600
 
     # Default timer interval for toast notifications (unit: seconds)
-    TIMER_INTERVAL_TOAST_DEFAULT_S = 10
+    TIMER_INTERVAL_TOAST_DEFAULT_S = 30
 
     # Active applications currently listed on a toast notification
     applications_on_toast = []

@@ -510,7 +510,7 @@ class MainWindow(QWidget):
         about_dialog.setWindowFlag(Qt.WindowStaysOnTopHint)
 
         icon = QLabel()
-        pixmap = QPixmap("resources/Yellow.png").scaled(60, 60, Qt.KeepAspectRatio)
+        pixmap = QPixmap(":/Yellow.png").scaled(60, 60, Qt.KeepAspectRatio)
         icon.setPixmap(pixmap)
 
         title_font = QFont()

@@ -14,8 +14,31 @@ You should have received a copy of the GNU General Public License along with Tas
 <http://www.gnu.org/licenses/>.
 """
 
-# Version string
+import git
+import os
+
+# Default version string
 VERSION = "0.0.0"
 
-# Git short hash
+# Default short Git hash
 GIT_SHORT_HASH = ""
+
+# Update version and hash from repository or file if possible
+try:
+	# Get information from repository
+	repo = git.Repo()
+	VERSION = next((str(tag) for tag in repo.tags if tag.commit == repo.head.commit), "0.0.0")
+	GIT_SHORT_HASH = repo.git.rev_parse(repo.head.object.hexsha, short=4)
+	if repo.is_dirty():
+		GIT_SHORT_HASH += " (dirty)"
+except git.exc.InvalidGitRepositoryError:
+	# Load version information from file if available
+	__version_locations = [".", "data"]
+	for location in __version_locations:
+		if os.path.isfile(os.path.join(location, "TaskbarNotifier.ver")):
+			__version_file = os.path.join(location, "TaskbarNotifier.ver")
+			break
+	if __version_file:
+		with open(__version_file, "r") as file:
+			VERSION = file.readline().rstrip()
+			GIT_SHORT_HASH = file.readline().rstrip()

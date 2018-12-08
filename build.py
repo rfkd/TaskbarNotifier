@@ -44,12 +44,13 @@ if __name__ == "__main__":
     ])
 
     # Create distribution archive
-    archive = zipfile.ZipFile(
-        os.path.join("dist", f"{APPLICATION_NAME}-{Version.VERSION}-g{Version.GIT_SHORT_HASH}.zip"), "w")
-    for root, dirs, files in os.walk(os.path.join("dist", APPLICATION_NAME)):
+    os.chdir("dist")
+    archive = zipfile.ZipFile(f"{APPLICATION_NAME}-{Version.VERSION}-g{Version.GIT_SHORT_HASH}.zip", "w")
+    for root, dirs, files in os.walk(APPLICATION_NAME):
         for file in files:
             archive.write(os.path.join(root, file))
     archive.close()
+    os.chdir("..")
 
     # Remove version file
     try:

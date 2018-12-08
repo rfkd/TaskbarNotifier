@@ -1,2 +1,7 @@
 /.idea
+/build
+/dist
 /TaskbarNotifier.dat
+/TaskbarNotifier.spec
+/TaskbarNotifier.ver
+__pycache__

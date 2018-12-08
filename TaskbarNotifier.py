@@ -20,12 +20,19 @@ import sys
 from typing import List
 
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QCloseEvent, QFont, QIcon
+from PyQt5.QtGui import QCloseEvent, QFont, QIcon, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QDialog, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, \
     QAbstractItemView, QSystemTrayIcon, QAction, QStyle, QMenu, QListWidgetItem, QGroupBox, QLineEdit, QShortcut, \
     QCheckBox, QLabel, QSpinBox, qApp
 
 from resources import Resources
+import Version
+
+# Full version string
+FULL_VERSION = f"{Version.VERSION}-g{Version.GIT_SHORT_HASH}" if len(Version.GIT_SHORT_HASH) else Version.VERSION
+
+# Dialog window title
+WINDOW_TITLE = f"Taskbar Notifier {FULL_VERSION}"
 
 
 def get_active_applications() -> List[str]:
@@ -60,7 +67,7 @@ def get_active_applications() -> List[str]:
             length = GetWindowTextLength(hwnd)
             buffer = ctypes.create_unicode_buffer(length + 1)
             GetWindowText(hwnd, buffer, length + 1)
-            if buffer.value and buffer.value not in ["MainWindow", "Taskbar Notifier", "Program Manager"]:
+            if buffer.value and buffer.value not in ["MainWindow", WINDOW_TITLE, "Program Manager"]:
                 active_applications.append(buffer.value)
 
         return True
@@ -96,7 +103,7 @@ class AppListDialog(QDialog):
         Build the user interface.
         """
 
-        self.setWindowTitle("Taskbar Notifier")
+        self.setWindowTitle(WINDOW_TITLE)
         self.setWindowIcon(QIcon(":/Yellow.png"))
         self.setMinimumSize(600, 250)
         self.resize(600, 250)
@@ -240,7 +247,7 @@ class MainWindow(QWidget):
         Build the user interface.
         """
 
-        self.setWindowTitle("Taskbar Notifier")
+        self.setWindowTitle(WINDOW_TITLE)
         self.setWindowIcon(QIcon(":/Yellow.png"))
         self.setFocusPolicy(Qt.StrongFocus)
         self.setMinimumSize(700, 300)
@@ -343,12 +350,17 @@ class MainWindow(QWidget):
 
         show_action = QAction("Show", self)
         show_action.setFont(show_action_font)
-        show_action.setIcon(self.style().standardIcon(QStyle.SP_TitleBarNormalButton))
+        show_action.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
         show_action.triggered.connect(self.__on_show)
         tray_menu.addAction(show_action)
 
+        about_action = QAction("About", self)
+        about_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
+        about_action.triggered.connect(self.__on_about)
+        tray_menu.addAction(about_action)
+
         quit_action = QAction("Exit", self)
-        quit_action.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
+        quit_action.setIcon(self.style().standardIcon(QStyle.SP_BrowserStop))
         quit_action.triggered.connect(self.__on_exit)
         tray_menu.addAction(quit_action)
 
@@ -486,6 +498,53 @@ class MainWindow(QWidget):
         self.show()
         self.activateWindow()
 
+    @staticmethod
+    def __on_about() -> None:
+        """
+        Event handler for the tray about action.
+        """
+
+        about_dialog = QDialog()
+        about_dialog.setWindowTitle("About")
+        about_dialog.setWindowIcon(QIcon(":/Yellow.png"))
+        about_dialog.setWindowFlag(Qt.WindowStaysOnTopHint)
+
+        icon = QLabel()
+        pixmap = QPixmap("resources/Yellow.png").scaled(60, 60, Qt.KeepAspectRatio)
+        icon.setPixmap(pixmap)
+
+        title_font = QFont()
+        title_font.setBold(True)
+        title_font.setPointSize(12)
+
+        title = QLabel(f"Taskbar Notifier")
+        title.setFont(title_font)
+
+        url = QLabel("<a href='https://github.com/rfkd/TaskbarNotifier'>"
+                     "https://github.com/rfkd/TaskbarNotifier</a>")
+        url.setOpenExternalLinks(True)
+
+        vbox_left = QVBoxLayout()
+        vbox_left.setContentsMargins(0, 0, 25, 0)
+        vbox_left.addWidget(icon)
+        vbox_left.addStretch(1)
+
+        vbox_right = QVBoxLayout()
+        vbox_right.addWidget(title)
+        vbox_right.addWidget(QLabel(f"Version: {FULL_VERSION}\n"))
+        vbox_right.addWidget(url)
+        vbox_right.addWidget(QLabel("Copyright © 2018 Ralf Dauberschmidt"))
+        vbox_right.addWidget(QLabel("\nThis application is licensed under the GPL."))
+
+        hbox = QHBoxLayout()
+        hbox.addLayout(vbox_left)
+        hbox.addLayout(vbox_right)
+
+        about_dialog.setLayout(hbox)
+        about_dialog.show()
+        about_dialog.setFixedSize(about_dialog.size())
+        about_dialog.exec_()
+
     def __on_exit(self) -> None:
         """
         Event handler for the tray exit action.
@@ -510,6 +569,7 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)
+    application.setQuitOnLastWindowClosed(False)
     main_window = MainWindow()
     exit_code = application.exec_()
 

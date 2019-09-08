@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Allow Taskbar Notifier to run on systems without an installed Git client
 
 ## [0.1.0] - 2018-12-08
 First release

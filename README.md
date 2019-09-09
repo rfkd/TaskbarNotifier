@@ -1,6 +1,6 @@
 # **Taskbar Notifier**
 
-Taskbar Notifier is running in the system tray and watches for applications on the taskbar. Once an application with a matching title appears or a running application changes its title to one of the setup patterns a Windows toast notification will appear. If configured, the toast notification will be repeated continuously as long as the application title matches. The application was originally written for Microsoft Outlook reminders opening in the background.
+Taskbar Notifier is running in the system tray and watches for applications on the taskbar. Once an application with a matching title appears or a running application changes its title to one of the setup patterns a Windows toast notification will be shown. If configured, the toast notification will be repeated continuously as long as the application title matches. The application was originally written for Microsoft Outlook reminders opening in the background.
 
 ### **INSTALLING THE BINARY PACKAGE**
 Download the latest [release package](https://github.com/rfkd/TaskbarNotifier/releases) from GitHub, extract the archive to any directory and start *TaskbarNotifier.exe* - it is advisable to add Taskbar Notifier to the Windows autostart. To configure Taskbar Notifier double-click the bell icon in the system tray and adjust watch expressions and settings.

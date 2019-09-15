@@ -1,17 +1,18 @@
 """
-This file is part of Taskbar Notifier.
+    This file is part of Taskbar Notifier.
 
-Copyright (C) 2018 Ralf Dauberschmidt <ralf@dauberschmidt.de>
+    Copyright (C) 2018-2019 Ralf Dauberschmidt <ralf@dauberschmidt.de>
 
-Taskbar Notifier is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
-License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later
-version.
+    Taskbar Notifier is free software; you can redistribute it and/or modify it under the terms of the GNU General
+    Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option)
+    any later version.
 
-Taskbar Notifier is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+    Taskbar Notifier is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+    details.
 
-You should have received a copy of the GNU General Public License along with Taskbar Notifier. If not, see
-<http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License along with Taskbar Notifier. If not, see
+    <http://www.gnu.org/licenses/>.
 """
 
 import ctypes
@@ -354,6 +355,11 @@ class MainWindow(QWidget):
         show_action.triggered.connect(self.__on_show)
         tray_menu.addAction(show_action)
 
+        self.tray_enable_disable_action = QAction("Disable", self)
+        self.tray_enable_disable_action.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+        self.tray_enable_disable_action.triggered.connect(self.__on_enable_disable)
+        tray_menu.addAction(self.tray_enable_disable_action)
+
         about_action = QAction("About", self)
         about_action.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
         about_action.triggered.connect(self.__on_about)
@@ -498,6 +504,23 @@ class MainWindow(QWidget):
         self.show()
         self.activateWindow()
 
+    def __on_enable_disable(self) -> None:
+        """
+        Event handler for the tray enable/disable action.
+        """
+
+        if self.timer_polling.isActive():
+            self.applications_on_toast = []
+            self.tray_icon.setIcon(QIcon(":/Disabled.png"))
+            self.tray_enable_disable_action.setText("Enable")
+            self.tray_enable_disable_action.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+            self.timer_polling.stop()
+        else:
+            self.tray_icon.setIcon(QIcon(":/Grey.png"))
+            self.tray_enable_disable_action.setText("Disable")
+            self.tray_enable_disable_action.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+            self.timer_polling.start(self.TIMER_INVTERVAL_POLLING_MS)
+
     @staticmethod
     def __on_about() -> None:
         """
@@ -533,7 +556,7 @@ class MainWindow(QWidget):
         vbox_right.addWidget(title)
         vbox_right.addWidget(QLabel(f"Version: {FULL_VERSION}\n"))
         vbox_right.addWidget(url)
-        vbox_right.addWidget(QLabel("Copyright © 2018 Ralf Dauberschmidt"))
+        vbox_right.addWidget(QLabel("Copyright © 2018-2019 Ralf Dauberschmidt"))
         vbox_right.addWidget(QLabel("\nThis application is licensed under the GPL."))
 
         hbox = QHBoxLayout()

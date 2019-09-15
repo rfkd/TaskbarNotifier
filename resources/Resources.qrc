@@ -2,5 +2,6 @@
 <qresource prefix="/">
    <file>Grey.png</file>
    <file>Yellow.png</file>
+   <file>Disabled.png</file>
 </qresource>
 </RCC>

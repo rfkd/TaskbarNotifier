@@ -1,7 +1,7 @@
 """
     This file is part of Taskbar Notifier.
 
-    Copyright (C) 2018-2019 Ralf Dauberschmidt <ralf@dauberschmidt.de>
+    Copyright (C) 2018-2020 Ralf Dauberschmidt <ralf@dauberschmidt.de>
 
     Taskbar Notifier is free software; you can redistribute it and/or modify it under the terms of the GNU General
     Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option)

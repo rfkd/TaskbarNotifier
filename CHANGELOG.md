@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Security
+- Update PyInstaller to version 3.6 due to [CVE-2019-16784](https://github.com/advisories/GHSA-7fcj-pq9j-wh2r)
 
 ## [0.2.0] - 2019-09-15
 ### Added

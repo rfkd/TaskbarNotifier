@@ -15,240 +15,83 @@
     <http://www.gnu.org/licenses/>.
 """
 
-import ctypes
-import sys
-
-from typing import List
+import logging
+import os
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QCloseEvent, QFont, QIcon, QPixmap
-from PyQt5.QtWidgets import QApplication, QWidget, QDialog, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, \
-    QAbstractItemView, QSystemTrayIcon, QAction, QStyle, QMenu, QListWidgetItem, QGroupBox, QLineEdit, QShortcut, \
-    QCheckBox, QLabel, QSpinBox, qApp
+from PyQt5.QtWidgets import (QWidget, QDialog, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, QAbstractItemView,
+                             QSystemTrayIcon, QAction, QStyle, QMenu, QListWidgetItem, QGroupBox, QLineEdit, QShortcut,
+                             QCheckBox, QLabel, QSpinBox, qApp)
 
-from resources import Resources
-import Version
+from gui.app_list_dialog import AppListDialog
+from miscellaneous.miscellaneous import get_active_applications
+from miscellaneous.notification import Notification
+from miscellaneous.version import GIT_SHORT_HASH, VERSION
 
-# Full version string
-FULL_VERSION = f"{Version.VERSION}-g{Version.GIT_SHORT_HASH}" if len(Version.GIT_SHORT_HASH) else Version.VERSION
-
-# Dialog window title
-WINDOW_TITLE = f"Taskbar Notifier {FULL_VERSION}"
-
-
-def get_active_applications() -> List[str]:
-    """
-    Get a list of active applications on the taskbar.
-    :return: List of active applications on the taskbar.
-    """
-
-    # noinspection PyPep8Naming
-    EnumWindows = ctypes.windll.user32.EnumWindows
-    # noinspection PyPep8Naming
-    EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
-
-    active_applications = []
-
-    def process_window_handle(hwnd, _) -> bool:
-        """
-        Callback function for EnumWindows.
-        :param hwnd: Handle to a top-level window.
-        :param _: Application defined value, unused.
-        :return: True to continue enumeration, false otherwise.
-        """
-
-        # noinspection PyPep8Naming
-        GetWindowText = ctypes.windll.user32.GetWindowTextW
-        # noinspection PyPep8Naming
-        GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
-        # noinspection PyPep8Naming
-        IsWindowVisible = ctypes.windll.user32.IsWindowVisible
-
-        if IsWindowVisible(hwnd):
-            length = GetWindowTextLength(hwnd)
-            buffer = ctypes.create_unicode_buffer(length + 1)
-            GetWindowText(hwnd, buffer, length + 1)
-            if buffer.value and buffer.value not in ["MainWindow", WINDOW_TITLE, "Program Manager"]:
-                active_applications.append(buffer.value)
-
-        return True
-
-    EnumWindows(EnumWindowsProc(process_window_handle), 0)
-
-    return active_applications
+# Define the logger
+LOG = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 
-# noinspection PyArgumentList,PyUnresolvedReferences
-class AppListDialog(QDialog):
-    """
-    Window listing all open applications on the taskbar.
-    """
-
-    def __init__(self, parent: QWidget) -> None:
-        """
-        Class constructor.
-        :param parent: MainWindow self.
-        """
-
-        self.parent = parent
-
-        # Call parent constructor
-        # noinspection PyArgumentList
-        super().__init__()
-
-        # Build the user interface
-        self.__build_user_interface()
-
-    def __build_user_interface(self) -> None:
-        """
-        Build the user interface.
-        """
-
-        self.setWindowTitle(WINDOW_TITLE)
-        self.setWindowIcon(QIcon(":/Yellow.png"))
-        self.setMinimumSize(600, 250)
-        self.resize(600, 250)
-
-        self.list_widget = QListWidget()
-        self.__populate_list()
-        self.list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.list_widget.selectionModel().selectionChanged.connect(self.__on_list_widget_selection_changed)
-        self.list_widget.doubleClicked.connect(self.__on_list_widget_double_clicked)
-
-        self.add_button = QPushButton("Add selected")
-        self.add_button.setToolTip("Add selected entries")
-        self.add_button.clicked.connect(self.__on_add_button_clicked)
-        self.add_button.setDisabled(True)
-
-        refresh_button = QPushButton("Refresh list")
-        refresh_button.setToolTip("Refresh the list of open applications")
-        refresh_button.clicked.connect(self.__on_refresh_button_clicked)
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.list_widget)
-
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.add_button)
-        hbox.addWidget(refresh_button)
-        hbox.addStretch(1)
-        vbox.addLayout(hbox)
-
-        group_box = QGroupBox()
-        group_box.setTitle("Open applications")
-        group_box.setLayout(vbox)
-
-        layout = QHBoxLayout()
-        layout.addWidget(group_box)
-
-        self.setLayout(layout)
-
-    def __populate_list(self) -> None:
-        """
-        Populate the list widget with the active applications on the taskbar.
-        """
-
-        for app in get_active_applications():
-            self.list_widget.addItem(app)
-
-    def __add_selected_items_to_parent_list(self) -> None:
-        """
-        Add all selected items to the parent list widget.
-        """
-
-        main_items = []
-        for i in range(self.parent.list_widget.count()):
-            main_items.append(self.parent.list_widget.item(i).text())
-
-        for item in self.list_widget.selectedItems():
-            if item.text() not in main_items:
-                editable_item = QListWidgetItem(item)
-                editable_item.setFlags(item.flags() | Qt.ItemIsEditable)
-                self.parent.list_widget.addItem(editable_item)
-
-    def __on_list_widget_selection_changed(self) -> None:
-        """
-        Selection changed event handler for the list widget.
-        """
-
-        self.add_button.setDisabled(len(self.list_widget.selectedIndexes()) == 0)
-
-    def __on_list_widget_double_clicked(self) -> None:
-        """
-        Double clicked event handler for the list widget.
-        """
-
-        self.__add_selected_items_to_parent_list()
-        self.close()
-
-    def __on_add_button_clicked(self) -> None:
-        """
-        Clicked event handler for the add button.
-        """
-
-        self.__add_selected_items_to_parent_list()
-        self.close()
-
-    def __on_refresh_button_clicked(self) -> None:
-        """
-        Clicked event handler for the refresh button.
-        """
-
-        self.list_widget.clear()
-        self.__populate_list()
-
-
-# noinspection PyArgumentList,PyUnresolvedReferences
 class MainWindow(QWidget):
     """
     Main application window class.
     """
+    # Full version string
+    FULL_VERSION = f"{VERSION}-g{GIT_SHORT_HASH}" if GIT_SHORT_HASH else VERSION
 
-    # File in which the list data is stored persistently
+    # Dialog window title
+    WINDOW_TITLE = f"Taskbar Notifier {FULL_VERSION}"
+
+    # File in which the application data is stored persistently
     DATA_FILE_NAME = "TaskbarNotifier.dat"
 
     # Data file version
     DATA_FILE_VERSION = 1
 
+    # Duration until a notification will expire (unit: seconds)
+    NOTIFICATION_DURATION_S = 5
+
     # Timer interval used for taskbar polling (unit: milliseconds)
     TIMER_INVTERVAL_POLLING_MS = 500
 
-    # Minimum timer interval for toast notifications (unit: seconds)
-    TIMER_INTERVAL_TOAST_MIN_S = 6
+    # Minimum timer interval for notifications (unit: seconds)
+    TIMER_INTERVAL_NOTIFICATION_MIN_S = NOTIFICATION_DURATION_S + 2
 
-    # Maximum timer interval for toast notifications (unit: seconds)
-    TIMER_INTERVAL_TOAST_MAX_S = 3600
+    # Maximum timer interval for notifications (unit: seconds)
+    TIMER_INTERVAL_NOTIFICATION_MAX_S = 3600
 
-    # Default timer interval for toast notifications (unit: seconds)
-    TIMER_INTERVAL_TOAST_DEFAULT_S = 30
+    # Default timer interval for notifications (unit: seconds)
+    TIMER_INTERVAL_NOTIFICATION_DEFAULT_S = 30
 
-    # Active applications currently listed on a toast notification
-    applications_on_toast = []
+    # Active applications currently listed on a notification
+    applications_on_notification = []
 
     def __init__(self) -> None:
         """
         Class constructor.
         """
-
-        # Call parent constructor
         super().__init__()
+
+        self.__notification = None
 
         # Build the user interface
         self.__build_user_interface()
         self.__setup_tray_icon()
 
         # Setup the timers
-        self.timer_toast = QTimer(self)
-        self.timer_toast.setSingleShot(True)
+        self.timer_repeat_notification = QTimer(self)
+        self.timer_repeat_notification.setSingleShot(True)
         self.timer_polling = QTimer(self)
         self.timer_polling.timeout.connect(self.__on_timer_polling_expired)
         self.timer_polling.start(self.TIMER_INVTERVAL_POLLING_MS)
 
+    # pylint: disable=too-many-statements
     def __build_user_interface(self) -> None:
         """
         Build the user interface.
         """
-
-        self.setWindowTitle(WINDOW_TITLE)
+        self.setWindowTitle(self.WINDOW_TITLE)
         self.setWindowIcon(QIcon(":/Yellow.png"))
         self.setFocusPolicy(Qt.StrongFocus)
         self.setMinimumSize(700, 300)
@@ -289,11 +132,11 @@ class MainWindow(QWidget):
         self.repeat_spin.setMaximumWidth(65)
         self.repeat_spin.setAlignment(Qt.AlignHCenter)
         self.repeat_spin.setDisabled(True)
-        self.repeat_spin.setMinimum(self.TIMER_INTERVAL_TOAST_MIN_S)
-        self.repeat_spin.setMaximum(self.TIMER_INTERVAL_TOAST_MAX_S)
-        self.repeat_spin.setValue(self.TIMER_INTERVAL_TOAST_DEFAULT_S)
-        self.repeat_spin.setToolTip(f"Value in seconds between {self.TIMER_INTERVAL_TOAST_MIN_S} "
-                                    f"and {self.TIMER_INTERVAL_TOAST_MAX_S}")
+        self.repeat_spin.setMinimum(self.TIMER_INTERVAL_NOTIFICATION_MIN_S)
+        self.repeat_spin.setMaximum(self.TIMER_INTERVAL_NOTIFICATION_MAX_S)
+        self.repeat_spin.setValue(self.TIMER_INTERVAL_NOTIFICATION_DEFAULT_S)
+        self.repeat_spin.setToolTip(f"Value in seconds between {self.TIMER_INTERVAL_NOTIFICATION_MIN_S} "
+                                    f"and {self.TIMER_INTERVAL_NOTIFICATION_MAX_S}")
 
         repeat_label = QLabel("seconds")
 
@@ -340,7 +183,6 @@ class MainWindow(QWidget):
         """
         Setup the tray icon.
         """
-
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon(":/Grey.png"))
         self.tray_icon.activated.connect(self.__on_tray_icon_activated)
@@ -374,14 +216,18 @@ class MainWindow(QWidget):
         self.tray_icon.show()
 
     def __on_tray_icon_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        """
+        Tray icon activated event handler.
+        :param reason: Reason for activation.
+        """
         if reason == QSystemTrayIcon.DoubleClick:
             self.__on_show()
+            LOG.info("Main window shown.")
 
     def __serialize_data(self) -> None:
         """
         Serialize the list entries to the data file.
         """
-
         with open(self.DATA_FILE_NAME, "w") as file:
             file.writelines(str(self.DATA_FILE_VERSION) + "\n")
             file.writelines(f"1 {self.repeat_spin.value()}\n" if self.repeat_check_box.checkState() == Qt.Checked
@@ -393,11 +239,10 @@ class MainWindow(QWidget):
         """
         Deserialize the list entries from tbe data file.
         """
-
         try:
             with open(self.DATA_FILE_NAME, "r") as file:
-                version = file.readline()
-                if int(version) != self.DATA_FILE_VERSION:
+                data_file_version = file.readline()
+                if int(data_file_version) != self.DATA_FILE_VERSION:
                     return
 
                 repeat, repeat_value = file.readline().split(" ", 1)
@@ -413,44 +258,47 @@ class MainWindow(QWidget):
 
     def __on_timer_polling_expired(self) -> None:
         """
-        Timer expired event handler.
+        Polling timer expired event handler.
         """
-
         if len(self.list_widget) == 0:
             return
 
         # Check whether a listed application is active
-        applications_to_be_toasted = []
-        active_applications = get_active_applications()
+        applications_to_be_notified = []
+        active_applications = get_active_applications([self.WINDOW_TITLE])
         for expression in [str(self.list_widget.item(i).text()) for i in range(self.list_widget.count())]:
             for app in active_applications:
                 if expression in app:
-                    applications_to_be_toasted.append(app)
+                    applications_to_be_notified.append(app)
 
-        # Create a toast notification for active applications
-        if len(applications_to_be_toasted):
-            repeat_toast = self.repeat_check_box.checkState() == Qt.Checked
+        # Create a notification for active applications
+        if applications_to_be_notified:
+            repeat_notification = self.repeat_check_box.checkState() == Qt.Checked
 
-            if (repeat_toast and not self.timer_toast.isActive()) \
-                    or applications_to_be_toasted != self.applications_on_toast:
-                self.tray_icon.showMessage("Taskbar Notifier", "\n".join(applications_to_be_toasted),
-                                           QIcon(":/Yellow.png"))
-                if repeat_toast:
-                    self.timer_toast.start(self.repeat_spin.value() * 1000)
+            if (repeat_notification and not self.timer_repeat_notification.isActive()) \
+                    or applications_to_be_notified != self.applications_on_notification:
+                if self.__notification:
+                    self.__notification.stop()
+                    self.__notification.deleteLater()
+                LOG.info("Showing notification for: %s", ", ".join(applications_to_be_notified))
+                self.__notification = Notification("Taskbar Notifier", "\n".join(applications_to_be_notified),
+                                                   self.NOTIFICATION_DURATION_S)
+
+                if repeat_notification:
+                    self.timer_repeat_notification.start(self.repeat_spin.value() * 1000)
 
         # Change the tray icon depending on the notification state
-        if len(self.applications_on_toast) > 0 and len(applications_to_be_toasted) == 0:
+        if len(self.applications_on_notification) > 0 and len(applications_to_be_notified) == 0:
             self.tray_icon.setIcon(QIcon(":/Grey.png"))
-        elif len(self.applications_on_toast) == 0 and len(applications_to_be_toasted) > 0:
+        elif len(self.applications_on_notification) == 0 and len(applications_to_be_notified) > 0:
             self.tray_icon.setIcon(QIcon(":/Yellow.png"))
 
-        self.applications_on_toast = applications_to_be_toasted
+        self.applications_on_notification = applications_to_be_notified
 
     def __on_list_widget_selection_changed(self) -> None:
         """
         Selection changed event handler for the list widget.
         """
-
         self.delete_button.setDisabled(len(self.list_widget.selectedIndexes()) == 0)
 
     def __on_add_edit_text_changed(self, text: str) -> None:
@@ -458,15 +306,13 @@ class MainWindow(QWidget):
         Text changed event handler for the add edit field.
         :param text: Edit field text.
         """
-
         self.add_button.setDisabled(len(text) == 0)
 
     def __on_add_button_clicked(self) -> None:
         """
         Clicked event handler for the add button.
         """
-
-        if len(self.add_edit.text()):
+        if self.add_edit.text():
             item = QListWidgetItem(self.add_edit.text())
             item.setFlags(item.flags() | Qt.ItemIsEditable)
             self.list_widget.addItem(item)
@@ -476,14 +322,12 @@ class MainWindow(QWidget):
         """
         Clicked event handler for the list button.
         """
-
         AppListDialog(self).exec_()
 
     def __on_delete_button_clicked(self) -> None:
         """
         Clicked event handler for the delete button.
         """
-
         for item in self.list_widget.selectedItems():
             self.list_widget.takeItem(self.list_widget.row(item))
 
@@ -492,14 +336,12 @@ class MainWindow(QWidget):
         Check state event handler for the repeat notifications check box.
         :param state: Check box state.
         """
-
         self.repeat_spin.setEnabled(state == Qt.Checked)
 
     def __on_show(self) -> None:
         """
         Event handler for the tray show action.
         """
-
         self.timer_polling.stop()
         self.show()
         self.activateWindow()
@@ -508,25 +350,25 @@ class MainWindow(QWidget):
         """
         Event handler for the tray enable/disable action.
         """
-
         if self.timer_polling.isActive():
-            self.applications_on_toast = []
+            self.applications_on_notification = []
             self.tray_icon.setIcon(QIcon(":/Disabled.png"))
             self.tray_enable_disable_action.setText("Enable")
             self.tray_enable_disable_action.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
             self.timer_polling.stop()
+            LOG.info("Application disabled.")
         else:
             self.tray_icon.setIcon(QIcon(":/Grey.png"))
             self.tray_enable_disable_action.setText("Disable")
             self.tray_enable_disable_action.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
             self.timer_polling.start(self.TIMER_INVTERVAL_POLLING_MS)
+            LOG.info("Application enabled.")
 
     @staticmethod
     def __on_about() -> None:
         """
         Event handler for the tray about action.
         """
-
         about_dialog = QDialog()
         about_dialog.setWindowTitle("About")
         about_dialog.setWindowIcon(QIcon(":/Yellow.png"))
@@ -540,7 +382,7 @@ class MainWindow(QWidget):
         title_font.setBold(True)
         title_font.setPointSize(12)
 
-        title = QLabel(f"Taskbar Notifier")
+        title = QLabel("Taskbar Notifier")
         title.setFont(title_font)
 
         url = QLabel("<a href='https://github.com/rfkd/TaskbarNotifier'>"
@@ -554,7 +396,7 @@ class MainWindow(QWidget):
 
         vbox_right = QVBoxLayout()
         vbox_right.addWidget(title)
-        vbox_right.addWidget(QLabel(f"Version: {FULL_VERSION}\n"))
+        vbox_right.addWidget(QLabel(f"Version: {MainWindow.FULL_VERSION}\n"))
         vbox_right.addWidget(url)
         vbox_right.addWidget(QLabel("Copyright © 2018-2020 Ralf Dauberschmidt"))
         vbox_right.addWidget(QLabel("\nThis application is licensed under the GPL."))
@@ -572,16 +414,15 @@ class MainWindow(QWidget):
         """
         Event handler for the tray exit action.
         """
-
         self.__serialize_data()
         qApp.quit()
 
+    # pylint: disable=invalid-name
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         On close event handler.
         :param event: Close event.
         """
-
         # Prevent that the app closes upon closing the main window
         event.ignore()
 
@@ -589,12 +430,4 @@ class MainWindow(QWidget):
         self.hide()
         self.timer_polling.start(self.TIMER_INVTERVAL_POLLING_MS)
 
-
-if __name__ == "__main__":
-    application = QApplication(sys.argv)
-    application.setQuitOnLastWindowClosed(False)
-    main_window = MainWindow()
-    exit_code = application.exec_()
-
-    main_window.tray_icon.setVisible(False)
-    sys.exit(exit_code)
+        LOG.info("Main window hidden.")

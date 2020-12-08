@@ -20,10 +20,13 @@ import zipfile
 
 import PyInstaller.__main__
 
-import Version
+from miscellaneous.version import GIT_SHORT_HASH, VERSION
 
 # Name of the application
 APPLICATION_NAME = "TaskbarNotifier"
+
+# File name of the application
+APPLICATION_FILE = "taskbar_notifier.py"
 
 # Location of the application icon
 APPLICATION_ICON = os.path.join("resources", "Yellow.ico")
@@ -31,8 +34,8 @@ APPLICATION_ICON = os.path.join("resources", "Yellow.ico")
 if __name__ == "__main__":
     # Write version and hash to file
     with open(f"{APPLICATION_NAME}.ver", "w") as file:
-        file.writelines(f"{Version.VERSION}\n")
-        file.writelines(f"{Version.GIT_SHORT_HASH}\n")
+        file.writelines(f"{VERSION}\n")
+        file.writelines(f"{GIT_SHORT_HASH}\n")
 
     # Create executable
     PyInstaller.__main__.run([
@@ -41,12 +44,13 @@ if __name__ == "__main__":
         "--windowed",
         f"--add-data={APPLICATION_NAME}.ver;data",
         f"--icon={APPLICATION_ICON}",
-        f"{APPLICATION_NAME}.py"
+        f"--name={APPLICATION_NAME}",
+        f"{APPLICATION_FILE}"
     ])
 
     # Create distribution archive
     os.chdir("dist")
-    archive = zipfile.ZipFile(f"{APPLICATION_NAME}-{Version.VERSION}-g{Version.GIT_SHORT_HASH}.zip", "w")
+    archive = zipfile.ZipFile(f"{APPLICATION_NAME}-{VERSION}-g{GIT_SHORT_HASH}.zip", "w")
     for root, dirs, files in os.walk(APPLICATION_NAME):
         for file in files:
             archive.write(os.path.join(root, file))

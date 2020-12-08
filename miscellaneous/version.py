@@ -15,8 +15,11 @@
     <http://www.gnu.org/licenses/>.
 """
 
-import errno
+import logging
 import os
+
+# Define the logger
+LOG = logging.getLogger(os.path.basename(__file__).split('.')[0])
 
 # Default version string
 VERSION = "unknown"
@@ -29,7 +32,7 @@ def load_from_file():
     """
     Try to load the version and Git hash from the 'TaskbarNotifier.ver' file and write them to the global variables.
     Leave the global variables untouched if the file cannot be found.
-    :return: None
+    :return: Tuple consisting of
     """
     global VERSION
     global GIT_SHORT_HASH
@@ -53,12 +56,15 @@ try:
     # Check if the application is called from a Git repository
     try:
         # Get version and Git hash from the repository
+        LOG.info("test")
         repo = git.Repo()
         VERSION = next((str(tag) for tag in repo.tags if tag.commit == repo.head.commit), "0.0.0")
         GIT_SHORT_HASH = repo.git.rev_parse(repo.head.object.hexsha, short=4)
         if repo.is_dirty():
             GIT_SHORT_HASH += " (dirty)"
-    except git.exc.InvalidGitRepositoryError:
+    except git.InvalidGitRepositoryError:
+        LOG.warning("Application is not started within a Git repository, loading version from file.")
         load_from_file()
 except ImportError:
+    LOG.warning("Git module cannot be imported, loading version from file.")
     load_from_file()

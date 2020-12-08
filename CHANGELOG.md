@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing
+### Changed
+- Replace Windows toast notifications with custom ones
 
 ## [0.2.1] - 2020-01-18
 ### Security

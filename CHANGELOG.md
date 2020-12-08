@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+Nothing
+
+## [0.3.0] - 2020-12-08
 ### Changed
 - Replace Windows toast notifications with custom ones
 
@@ -20,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2018-12-08
 First release
 
-[Unreleased]: https://github.com/rfkd/TaskbarNotifier/compare/0.2.1...HEAD
+[Unreleased]: https://github.com/rfkd/TaskbarNotifier/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/rfkd/TaskbarNotifier/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/rfkd/TaskbarNotifier/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/rfkd/TaskbarNotifier/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/rfkd/TaskbarNotifier/releases/tag/0.1.0

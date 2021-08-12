@@ -13,7 +13,7 @@ pypiwin32==223
 PyQt5==5.15.2
 PyQt5-sip==12.8.1
 PyQt5-stubs==5.14.2.2
-pywin32==300
+pywin32==301
 pywin32-ctypes==0.2.0
 six==1.15.0
 smmap==3.0.4

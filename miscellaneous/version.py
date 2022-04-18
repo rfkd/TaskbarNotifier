@@ -1,7 +1,7 @@
 """
     This file is part of Taskbar Notifier.
 
-    Copyright (C) 2018-2020 Ralf Dauberschmidt <ralf@dauberschmidt.de>
+    Copyright (C) 2018-2022 Ralf Dauberschmidt <ralf@dauberschmidt.de>
 
     Taskbar Notifier is free software; you can redistribute it and/or modify it under the terms of the GNU General
     Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option)
@@ -56,7 +56,6 @@ try:
     # Check if the application is called from a Git repository
     try:
         # Get version and Git hash from the repository
-        LOG.info("test")
         repo = git.Repo()
         VERSION = next((str(tag) for tag in repo.tags if tag.commit == repo.head.commit), "0.0.0")
         GIT_SHORT_HASH = repo.git.rev_parse(repo.head.object.hexsha, short=4)

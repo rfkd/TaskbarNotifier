@@ -19,6 +19,8 @@ import logging
 import os
 import sys
 
+from enum import Enum
+
 from PyQt5.QtCore import Qt, QEasingCurve, QPoint, QPropertyAnimation, QRectF, QSequentialAnimationGroup, pyqtProperty
 from PyQt5.QtGui import QColor, QFont, QPainter, QPainterPath, QPalette, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QVBoxLayout, QWidget
@@ -49,18 +51,29 @@ class Notification(QWidget):
     # Fading duration (unit: milliseconds)
     FADING_DURATION = 500
 
-    def __init__(self, title: str, text: str, duration_s: int) -> None:
+    class Location(Enum):
+        """
+        Enumeration representing the location of the notification.
+        """
+        BOTTOM_LEFT = 0
+        BOTTOM_RIGHT = 1
+        TOP_LEFT = 2
+        TOP_RIGHT = 3
+
+    def __init__(self, title: str, text: str, duration_s: int, location: Location) -> None:
         """
         Class constructor.
         :param title: Notification title.
         :param text: Notification text.
         :param duration_s: Notification duration in seconds.
+        :param location: Location of the notification.
         """
         super().__init__()
 
         self.__animation_group = None
         self.__duration_ms = duration_s * 1000
         assert self.__duration_ms > 2 * self.FADING_DURATION
+        self.__location = location
 
         self.__build_user_interface(title, text)
         self.__show()
@@ -177,8 +190,18 @@ class Notification(QWidget):
         super().show()
 
         desktop = QApplication.instance().desktop()
-        self.move(QPoint(desktop.screenGeometry().width() - self.width() - 10,
-                         desktop.availableGeometry().height() - self.height() - 10))
+        offset = 10
+        if self.__location == Notification.Location.BOTTOM_LEFT:
+            origin = QPoint(offset, desktop.availableGeometry().height() - self.height() - offset)
+        elif self.__location == Notification.Location.BOTTOM_RIGHT:
+            origin = QPoint(desktop.screenGeometry().width() - self.width() - offset,
+                            desktop.availableGeometry().height() - self.height() - offset)
+        elif self.__location == Notification.Location.TOP_LEFT:
+            origin = QPoint(offset, offset)
+        else:
+            assert self.__location == Notification.Location.TOP_RIGHT
+            origin = QPoint(desktop.screenGeometry().width() - self.width() - offset, offset)
+        self.move(origin)
 
         self.__animate_opacity()
 

@@ -24,7 +24,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QCloseEvent, QFont, QIcon, QPixmap
 from PyQt5.QtWidgets import (QWidget, QDialog, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, QAbstractItemView,
                              QSystemTrayIcon, QAction, QStyle, QMenu, QListWidgetItem, QGroupBox, QLineEdit, QShortcut,
-                             QCheckBox, QLabel, QSpinBox, QMessageBox, qApp)
+                             QCheckBox, QLabel, QSpinBox, QMessageBox, QComboBox, qApp)
 
 from gui.app_list_dialog import AppListDialog
 from miscellaneous.miscellaneous import get_active_applications
@@ -49,7 +49,7 @@ class MainWindow(QWidget):
     DATA_FILE_NAME = "TaskbarNotifier.dat"
 
     # Data file version
-    DATA_FILE_VERSION = 1
+    DATA_FILE_VERSION = 2
 
     # Registry key for the auto-start entry
     AUTOSTART_REGISTRY_KEY = "TaskbarNotifier"
@@ -140,7 +140,6 @@ class MainWindow(QWidget):
 
         self.repeat_check_box = QCheckBox("Repeat active notifications every")
         self.repeat_check_box.stateChanged.connect(self.__on_repeat_check_box_state_changed)
-
         self.repeat_spin = QSpinBox()
         self.repeat_spin.setMaximumWidth(65)
         self.repeat_spin.setAlignment(Qt.AlignHCenter)
@@ -150,8 +149,15 @@ class MainWindow(QWidget):
         self.repeat_spin.setValue(self.TIMER_INTERVAL_NOTIFICATION_DEFAULT_S)
         self.repeat_spin.setToolTip(f"Value in seconds between {self.TIMER_INTERVAL_NOTIFICATION_MIN_S} "
                                     f"and {self.TIMER_INTERVAL_NOTIFICATION_MAX_S}")
-
         repeat_label = QLabel("seconds")
+
+        notification_location_label = QLabel("Location of notifications: ")
+        self.notification_location = QComboBox()
+        self.notification_location.addItem("Bottom left", Notification.Location.BOTTOM_LEFT)
+        self.notification_location.addItem("Bottom right", Notification.Location.BOTTOM_RIGHT)
+        self.notification_location.addItem("Top left", Notification.Location.TOP_LEFT)
+        self.notification_location.addItem("Top right", Notification.Location.TOP_RIGHT)
+        self.notification_location.setCurrentIndex(1)
 
         self.__deserialize_data()
 
@@ -187,6 +193,12 @@ class MainWindow(QWidget):
         hbox_repeat.addWidget(repeat_label)
         hbox_repeat.addStretch(1)
         vbox_settings.addLayout(hbox_repeat)
+
+        hbox_notification_location = QHBoxLayout()
+        hbox_notification_location.addWidget(notification_location_label)
+        hbox_notification_location.addWidget(self.notification_location)
+        hbox_notification_location.addStretch(1)
+        vbox_settings.addLayout(hbox_notification_location)
 
         group_settings = QGroupBox()
         group_settings.setTitle("Settings")
@@ -251,6 +263,7 @@ class MainWindow(QWidget):
             file.writelines(str(self.DATA_FILE_VERSION) + "\n")
             file.writelines(f"1 {self.repeat_spin.value()}\n" if self.repeat_check_box.checkState() == Qt.Checked
                             else f"0 {self.repeat_spin.value()}\n")
+            file.writelines(f"{self.notification_location.currentIndex()}\n")
             file.writelines(map(lambda x: x + "\n", [str(self.list_widget.item(i).text())
                                                      for i in range(self.list_widget.count())]))
 
@@ -267,6 +280,9 @@ class MainWindow(QWidget):
                 repeat, repeat_value = file.readline().split(" ", 1)
                 self.repeat_check_box.setCheckState(Qt.Checked if int(repeat) > 0 else Qt.Unchecked)
                 self.repeat_spin.setValue(int(repeat_value))
+
+                notification_location_index = file.readline()
+                self.notification_location.setCurrentIndex(int(notification_location_index))
 
                 for line in file:
                     item = QListWidgetItem(line.rstrip())
@@ -301,7 +317,8 @@ class MainWindow(QWidget):
                     self.__notification.deleteLater()
                 LOG.info("Showing notification for: %s", ", ".join(applications_to_be_notified))
                 self.__notification = Notification("Taskbar Notifier", "\n".join(applications_to_be_notified),
-                                                   self.NOTIFICATION_DURATION_S)
+                                                   self.NOTIFICATION_DURATION_S,
+                                                   self.notification_location.currentData())
 
                 if repeat_notification:
                     self.timer_repeat_notification.start(self.repeat_spin.value() * 1000)

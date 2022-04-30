@@ -3,7 +3,10 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing
+### Added
+- Add setting to auto-start Taskbar Notifier
+- Allow changing the notification location
+- Allow closing the notification with any mouse event
 
 ## [0.3.0] - 2020-12-08
 ### Changed

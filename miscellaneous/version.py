@@ -43,7 +43,7 @@ def load_from_file():
     for path in versionfile_search_paths:
         versionfile = os.path.join(path, versionfile_name)
         if os.path.isfile(versionfile):
-            with open(versionfile, "r") as file:
+            with open(versionfile, "r", encoding="utf-8") as file:
                 VERSION = file.readline().rstrip()
                 GIT_SHORT_HASH = file.readline().rstrip()
             break

@@ -60,7 +60,7 @@ class Notification(QWidget):
 
         self.__animation_group = None
         self.__duration_ms = duration_s * 1000
-        assert self.__duration_ms  > 2 * self.FADING_DURATION
+        assert self.__duration_ms > 2 * self.FADING_DURATION
 
         self.__build_user_interface(title, text)
         self.__show()

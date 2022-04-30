@@ -22,7 +22,7 @@ import sys
 from enum import Enum
 
 from PyQt5.QtCore import Qt, QEasingCurve, QPoint, QPropertyAnimation, QRectF, QSequentialAnimationGroup, pyqtProperty
-from PyQt5.QtGui import QColor, QFont, QPainter, QPainterPath, QPalette, QPen, QPixmap
+from PyQt5.QtGui import QColor, QFont, QMouseEvent, QPainter, QPainterPath, QPalette, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 # Define the logger
@@ -77,6 +77,15 @@ class Notification(QWidget):
 
         self.__build_user_interface(title, text)
         self.__show()
+
+    # pylint: disable=invalid-name
+    def mousePressEvent(self, _: QMouseEvent) -> None:
+        """
+        Mouse event handler.
+        :param _: Captured mouse event.
+        """
+        # Close the notification on any mouse event
+        self.stop()
 
     # pylint: disable=invalid-name
     def paintEvent(self, event) -> None:

@@ -17,12 +17,14 @@
 
 import logging
 import os
+import sys
+import winreg
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QCloseEvent, QFont, QIcon, QPixmap
 from PyQt5.QtWidgets import (QWidget, QDialog, QListWidget, QHBoxLayout, QVBoxLayout, QPushButton, QAbstractItemView,
                              QSystemTrayIcon, QAction, QStyle, QMenu, QListWidgetItem, QGroupBox, QLineEdit, QShortcut,
-                             QCheckBox, QLabel, QSpinBox, qApp)
+                             QCheckBox, QLabel, QSpinBox, QMessageBox, qApp)
 
 from gui.app_list_dialog import AppListDialog
 from miscellaneous.miscellaneous import get_active_applications
@@ -48,6 +50,9 @@ class MainWindow(QWidget):
 
     # Data file version
     DATA_FILE_VERSION = 1
+
+    # Registry key for the auto-start entry
+    AUTOSTART_REGISTRY_KEY = "TaskbarNotifier"
 
     # Duration until a notification will expire (unit: seconds)
     NOTIFICATION_DURATION_S = 5
@@ -125,6 +130,14 @@ class MainWindow(QWidget):
         self.delete_button.setToolTip("Delete selected entries")
         self.delete_button.clicked.connect(self.__on_delete_button_clicked)
 
+        self.autostart_check_box = QCheckBox("Automatically start after login")
+        self.autostart_check_box.stateChanged.connect(self.__on_autostart_check_box_state_changed)
+        self.__set_autostart_check_box()
+        if sys.executable.endswith("python.exe"):
+            self.autostart_check_box.setDisabled(True)
+            self.autostart_check_box.setToolTip("Taskbar Notifier needs to be compiled as a binary to use this "
+                                                "feature.")
+
         self.repeat_check_box = QCheckBox("Repeat active notifications every")
         self.repeat_check_box.stateChanged.connect(self.__on_repeat_check_box_state_changed)
 
@@ -162,6 +175,12 @@ class MainWindow(QWidget):
         group_watch_expressions.setLayout(vbox_list)
 
         vbox_settings = QVBoxLayout()
+
+        hbox_autostart = QHBoxLayout()
+        hbox_autostart.addWidget(self.autostart_check_box)
+        hbox_autostart.addStretch(1)
+        vbox_settings.addLayout(hbox_autostart)
+
         hbox_repeat = QHBoxLayout()
         hbox_repeat.addWidget(self.repeat_check_box)
         hbox_repeat.addWidget(self.repeat_spin)
@@ -228,7 +247,7 @@ class MainWindow(QWidget):
         """
         Serialize the list entries to the data file.
         """
-        with open(self.DATA_FILE_NAME, "w") as file:
+        with open(self.DATA_FILE_NAME, mode="w", encoding="utf-8") as file:
             file.writelines(str(self.DATA_FILE_VERSION) + "\n")
             file.writelines(f"1 {self.repeat_spin.value()}\n" if self.repeat_check_box.checkState() == Qt.Checked
                             else f"0 {self.repeat_spin.value()}\n")
@@ -240,7 +259,7 @@ class MainWindow(QWidget):
         Deserialize the list entries from tbe data file.
         """
         try:
-            with open(self.DATA_FILE_NAME, "r") as file:
+            with open(self.DATA_FILE_NAME, mode="r", encoding="utf-8") as file:
                 data_file_version = file.readline()
                 if int(data_file_version) != self.DATA_FILE_VERSION:
                     return
@@ -330,6 +349,50 @@ class MainWindow(QWidget):
         """
         for item in self.list_widget.selectedItems():
             self.list_widget.takeItem(self.list_widget.row(item))
+
+    def __set_autostart_check_box(self) -> None:
+        """
+        Set the state of the auto-start check box based on the registry.
+        """
+        # noinspection PyBroadException
+        try:
+            handle = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 0,
+                                    winreg.KEY_QUERY_VALUE)
+            winreg.QueryValueEx(handle, self.AUTOSTART_REGISTRY_KEY)
+        # pylint: disable=broad-except
+        except Exception:
+            self.autostart_check_box.setCheckState(Qt.Unchecked)
+        else:
+            self.autostart_check_box.setCheckState(Qt.Checked)
+
+    def __on_autostart_check_box_state_changed(self, state: Qt.CheckState) -> None:
+        """
+        Check state event handler for the auto-start check box.
+        :param state: Check box state.
+        """
+        try:
+            handle = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", 0,
+                                    winreg.KEY_SET_VALUE)
+            if state == Qt.Checked:
+                winreg.SetValueEx(handle, self.AUTOSTART_REGISTRY_KEY, 0, winreg.REG_SZ, sys.executable)
+                LOG.debug("Auto-start enabled.")
+            else:
+                winreg.DeleteValue(handle, self.AUTOSTART_REGISTRY_KEY)
+                LOG.debug("Auto-start disabled.")
+        # pylint: disable=broad-except
+        except Exception as exception:
+            # Show an error message box
+            box = QMessageBox()
+            box.setIcon(QMessageBox.Warning)
+            box.setWindowIcon(QIcon(":/Yellow.png"))
+            box.setWindowTitle("Error")
+            box.setText(str(exception))
+            box.exec_()
+
+            # Restore previous box state (without triggering another event)
+            self.autostart_check_box.blockSignals(True)
+            self.autostart_check_box.setCheckState(Qt.Unchecked if state == Qt.Checked else Qt.Checked)
+            self.autostart_check_box.blockSignals(False)
 
     def __on_repeat_check_box_state_changed(self, state: Qt.CheckState) -> None:
         """

@@ -38,6 +38,5 @@ if __name__ == "__main__":
     main_window = MainWindow()
     exit_code = application.exec_()
 
-    main_window.tray_icon.setVisible(False)
     LOG.info("Taskbar Notifier terminating with exit code %d.", exit_code)
     sys.exit(exit_code)

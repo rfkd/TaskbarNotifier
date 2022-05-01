@@ -1,7 +1,7 @@
 """
     This file is part of Taskbar Notifier.
 
-    Copyright (C) 2018-2020 Ralf Dauberschmidt <ralf@dauberschmidt.de>
+    Copyright (C) 2018-2022 Ralf Dauberschmidt <ralf@dauberschmidt.de>
 
     Taskbar Notifier is free software; you can redistribute it and/or modify it under the terms of the GNU General
     Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option)
@@ -33,7 +33,7 @@ APPLICATION_ICON = os.path.join("resources", "Yellow.ico")
 
 if __name__ == "__main__":
     # Write version and hash to file
-    with open(f"{APPLICATION_NAME}.ver", "w") as file:
+    with open(f"{APPLICATION_NAME}.ver", "w", encoding="utf-8") as file:
         file.writelines(f"{VERSION}\n")
         file.writelines(f"{GIT_SHORT_HASH}\n")
 
@@ -50,11 +50,10 @@ if __name__ == "__main__":
 
     # Create distribution archive
     os.chdir("dist")
-    archive = zipfile.ZipFile(f"{APPLICATION_NAME}-{VERSION}-g{GIT_SHORT_HASH}.zip", "w")
-    for root, dirs, files in os.walk(APPLICATION_NAME):
-        for file in files:
-            archive.write(os.path.join(root, file))
-    archive.close()
+    with zipfile.ZipFile(f"{APPLICATION_NAME}-{VERSION}-g{GIT_SHORT_HASH}.zip", "w") as archive:
+        for root, dirs, files in os.walk(APPLICATION_NAME):
+            for file in files:
+                archive.write(os.path.join(root, file))
     os.chdir("..")
 
     # Remove version file

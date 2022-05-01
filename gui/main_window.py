@@ -499,7 +499,7 @@ class MainWindow(QWidget):
         vbox_right.addWidget(title)
         vbox_right.addWidget(QLabel(f"Version: {MainWindow.FULL_VERSION}\n"))
         vbox_right.addWidget(url)
-        vbox_right.addWidget(QLabel("Copyright © 2018-2020 Ralf Dauberschmidt"))
+        vbox_right.addWidget(QLabel("Copyright © 2018-2022 Ralf Dauberschmidt"))
         vbox_right.addWidget(QLabel("\nThis application is licensed under the GPL."))
 
         hbox = QHBoxLayout()

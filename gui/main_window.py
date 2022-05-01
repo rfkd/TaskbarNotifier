@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (QWidget, QDialog, QListWidget, QHBoxLayout, QVBoxLa
                              QCheckBox, QLabel, QSpinBox, QMessageBox, QComboBox, qApp)
 
 from gui.app_list_dialog import AppListDialog
+from miscellaneous.flash_screen import FlashScreen
 from miscellaneous.miscellaneous import get_active_applications
 from miscellaneous.notification import Notification
 from miscellaneous.version import GIT_SHORT_HASH, VERSION
@@ -78,6 +79,7 @@ class MainWindow(QWidget):
         """
         super().__init__()
 
+        self.__flash_screen = None
         self.__notification = None
 
         # Build the user interface
@@ -138,6 +140,8 @@ class MainWindow(QWidget):
             self.autostart_check_box.setToolTip("Taskbar Notifier needs to be compiled as a binary to use this "
                                                 "feature.")
 
+        self.flash_screen_check_box = QCheckBox("Flash screen on notifications")
+
         self.repeat_check_box = QCheckBox("Repeat active notifications every")
         self.repeat_check_box.stateChanged.connect(self.__on_repeat_check_box_state_changed)
         self.repeat_spin = QSpinBox()
@@ -186,6 +190,11 @@ class MainWindow(QWidget):
         hbox_autostart.addWidget(self.autostart_check_box)
         hbox_autostart.addStretch(1)
         vbox_settings.addLayout(hbox_autostart)
+
+        hbox_flash_screen = QHBoxLayout()
+        hbox_flash_screen.addWidget(self.flash_screen_check_box)
+        hbox_flash_screen.addStretch(1)
+        vbox_settings.addLayout(hbox_flash_screen)
 
         hbox_repeat = QHBoxLayout()
         hbox_repeat.addWidget(self.repeat_check_box)
@@ -261,6 +270,7 @@ class MainWindow(QWidget):
         """
         with open(self.DATA_FILE_NAME, mode="w", encoding="utf-8") as file:
             file.writelines(str(self.DATA_FILE_VERSION) + "\n")
+            file.writelines("1\n" if self.flash_screen_check_box.checkState() == Qt.Checked else "0\n")
             file.writelines(f"1 {self.repeat_spin.value()}\n" if self.repeat_check_box.checkState() == Qt.Checked
                             else f"0 {self.repeat_spin.value()}\n")
             file.writelines(f"{self.notification_location.currentIndex()}\n")
@@ -276,6 +286,9 @@ class MainWindow(QWidget):
                 data_file_version = file.readline()
                 if int(data_file_version) != self.DATA_FILE_VERSION:
                     return
+
+                flash_screen = file.readline()
+                self.flash_screen_check_box.setCheckState(Qt.Checked if int(flash_screen) > 0 else Qt.Unchecked)
 
                 repeat, repeat_value = file.readline().split(" ", 1)
                 self.repeat_check_box.setCheckState(Qt.Checked if int(repeat) > 0 else Qt.Unchecked)
@@ -312,6 +325,13 @@ class MainWindow(QWidget):
 
             if (repeat_notification and not self.timer_repeat_notification.isActive()) \
                     or applications_to_be_notified != self.applications_on_notification:
+                if self.flash_screen_check_box.checkState() == Qt.Checked:
+                    if self.__flash_screen:
+                        self.__flash_screen.stop()
+                        self.__flash_screen.deleteLater()
+                    LOG.info("Flashing the screen.")
+                    self.__flash_screen = FlashScreen()
+
                 if self.__notification:
                     self.__notification.stop()
                     self.__notification.deleteLater()

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add setting to auto-start Taskbar Notifier
 - Allow changing the notification location
 - Allow closing the notification with any mouse event
+- Add setting to flash the screen shortly on notifications
 
 ## [0.3.0] - 2020-12-08
 ### Changed

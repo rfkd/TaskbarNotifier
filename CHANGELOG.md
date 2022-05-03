@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing
+### Fixed
+- Settings were not saved when auto-started due to wrong working directory
 
 ## [1.0.0] - 2022-05-01
 ### Added

@@ -20,6 +20,8 @@ import os
 import sys
 import winreg
 
+from pathlib import Path
+
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QCloseEvent, QFont, QIcon, QPixmap
 from PyQt5.QtWidgets import (QAbstractItemView, QAction, QCheckBox, QComboBox, QDialog, QGroupBox, QHBoxLayout, QLabel,
@@ -47,7 +49,7 @@ class MainWindow(QWidget):
     WINDOW_TITLE = f"Taskbar Notifier {FULL_VERSION}"
 
     # File in which the application data is stored persistently
-    DATA_FILE_NAME = "TaskbarNotifier.dat"
+    DATA_FILE_PATH = Path(os.getenv("APPDATA")) / "TaskbarNotifier" / "TaskbarNotifier.dat"
 
     # Data file version
     DATA_FILE_VERSION = 2
@@ -269,7 +271,8 @@ class MainWindow(QWidget):
         """
         Serialize the list entries to the data file.
         """
-        with open(self.DATA_FILE_NAME, mode="w", encoding="utf-8") as file:
+        self.DATA_FILE_PATH.parents[0].mkdir(parents=False, exist_ok=True)
+        with open(self.DATA_FILE_PATH, mode="w", encoding="utf-8") as file:
             file.writelines(str(self.DATA_FILE_VERSION) + "\n")
             file.writelines("1\n" if self.__flash_screen_check_box.checkState() == Qt.Checked else "0\n")
             file.writelines(f"1 {self.__repeat_spin.value()}\n" if self.__repeat_check_box.checkState() == Qt.Checked
@@ -283,7 +286,7 @@ class MainWindow(QWidget):
         Deserialize the list entries from tbe data file.
         """
         try:
-            with open(self.DATA_FILE_NAME, mode="r", encoding="utf-8") as file:
+            with open(self.DATA_FILE_PATH, mode="r", encoding="utf-8") as file:
                 data_file_version = file.readline()
                 if int(data_file_version) != self.DATA_FILE_VERSION:
                     return

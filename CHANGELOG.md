@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 Nothing
 
+## [1.0.1] - 2022-05-03
+### Fixed
+- Settings were not saved when auto-started due to wrong working directory
+
 ## [1.0.0] - 2022-05-01
 ### Added
 - Add setting to auto-start Taskbar Notifier
@@ -30,7 +34,8 @@ Nothing
 ## [0.1.0] - 2018-12-08
 First release
 
-[Unreleased]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.1...HEAD
+[1.0.1]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/rfkd/TaskbarNotifier/compare/0.3.0...1.0.0
 [0.3.0]: https://github.com/rfkd/TaskbarNotifier/compare/0.2.1...0.3.0
 [0.2.1]: https://github.com/rfkd/TaskbarNotifier/compare/0.2.0...0.2.1

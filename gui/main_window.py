@@ -104,8 +104,8 @@ class MainWindow(QWidget):
         self.setWindowTitle(self.WINDOW_TITLE)
         self.setWindowIcon(QIcon(":/Yellow.png"))
         self.setFocusPolicy(Qt.StrongFocus)
-        self.setMinimumSize(700, 300)
-        self.resize(700, 300)
+        self.setMinimumSize(700, 400)
+        self.resize(700, 400)
 
         self.list_widget = QListWidget()
         self.list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)

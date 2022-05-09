@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing
+### Fixed
+- Fix crash when adding a listed open app
 
 ## [1.0.1] - 2022-05-03
 ### Fixed

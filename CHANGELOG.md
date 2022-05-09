@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+Nothing
+
+## [1.0.2] - 2022-05-09
 ### Fixed
 - Fix crash when adding a listed open app
 - Fix taskbar icon of notification
@@ -36,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2018-12-08
 First release
 
-[Unreleased]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.1...HEAD
+[Unreleased]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.2...HEAD
+[1.0.2]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/rfkd/TaskbarNotifier/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/rfkd/TaskbarNotifier/compare/0.3.0...1.0.0
 [0.3.0]: https://github.com/rfkd/TaskbarNotifier/compare/0.2.1...0.3.0

@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Fix crash when adding a listed open app
+- Fix taskbar icon of notification
 
 ## [1.0.1] - 2022-05-03
 ### Fixed

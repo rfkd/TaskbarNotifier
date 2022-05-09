@@ -22,7 +22,7 @@ import sys
 from enum import Enum
 
 from PyQt5.QtCore import Qt, QEasingCurve, QPoint, QPropertyAnimation, QRectF, QSequentialAnimationGroup, pyqtProperty
-from PyQt5.QtGui import QColor, QFont, QMouseEvent, QPainter, QPainterPath, QPalette, QPen, QPixmap
+from PyQt5.QtGui import QColor, QFont, QIcon, QMouseEvent, QPainter, QPainterPath, QPalette, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 # Define the logger
@@ -127,6 +127,7 @@ class Notification(QWidget):
         :param text: Notification text.
         """
         # Window behavior
+        self.setWindowIcon(QIcon(":/Yellow.png"))
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setMinimumWidth(self.MINIMUM_WIDTH)

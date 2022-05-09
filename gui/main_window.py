@@ -104,15 +104,15 @@ class MainWindow(QWidget):
         self.setWindowTitle(self.WINDOW_TITLE)
         self.setWindowIcon(QIcon(":/Yellow.png"))
         self.setFocusPolicy(Qt.StrongFocus)
-        self.setMinimumSize(700, 300)
-        self.resize(700, 300)
+        self.setMinimumSize(700, 400)
+        self.resize(700, 400)
 
-        self.__list_widget = QListWidget()
-        self.__list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.__list_widget.selectionModel().selectionChanged.connect(self.__on_list_widget_selection_changed)
-        self.__list_widget.setToolTip("Double click to edit")
+        self.list_widget = QListWidget()
+        self.list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.list_widget.selectionModel().selectionChanged.connect(self.__on_list_widget_selection_changed)
+        self.list_widget.setToolTip("Double click to edit")
 
-        shortcut = QShortcut(Qt.Key_Delete, self.__list_widget)
+        shortcut = QShortcut(Qt.Key_Delete, self.list_widget)
         shortcut.activated.connect(self.__on_delete_button_clicked)
 
         self.__add_edit = QLineEdit()
@@ -175,7 +175,7 @@ class MainWindow(QWidget):
         hbox_add.addWidget(self.__add_button)
         vbox_list.addLayout(hbox_add)
 
-        vbox_list.addWidget(self.__list_widget)
+        vbox_list.addWidget(self.list_widget)
 
         hbox_buttons = QHBoxLayout()
         hbox_buttons.addWidget(self.__delete_button)
@@ -278,8 +278,8 @@ class MainWindow(QWidget):
             file.writelines(f"1 {self.__repeat_spin.value()}\n" if self.__repeat_check_box.checkState() == Qt.Checked
                             else f"0 {self.__repeat_spin.value()}\n")
             file.writelines(f"{self.__notification_location.currentIndex()}\n")
-            file.writelines(map(lambda x: x + "\n", [str(self.__list_widget.item(i).text())
-                                                     for i in range(self.__list_widget.count())]))
+            file.writelines(map(lambda x: x + "\n", [str(self.list_widget.item(i).text())
+                                                     for i in range(self.list_widget.count())]))
 
     def __deserialize_data(self) -> None:
         """
@@ -304,7 +304,7 @@ class MainWindow(QWidget):
                 for line in file:
                     item = QListWidgetItem(line.rstrip())
                     item.setFlags(item.flags() | Qt.ItemIsEditable)
-                    self.__list_widget.addItem(item)
+                    self.list_widget.addItem(item)
         except FileNotFoundError:
             pass
 
@@ -312,13 +312,13 @@ class MainWindow(QWidget):
         """
         Polling timer expired event handler.
         """
-        if len(self.__list_widget) == 0:
+        if len(self.list_widget) == 0:
             return
 
         # Check whether a listed application is active
         applications_to_be_notified = []
         active_applications = get_active_applications([self.WINDOW_TITLE])
-        for expression in [str(self.__list_widget.item(i).text()) for i in range(self.__list_widget.count())]:
+        for expression in [str(self.list_widget.item(i).text()) for i in range(self.list_widget.count())]:
             for app in active_applications:
                 if expression in app:
                     applications_to_be_notified.append(app)
@@ -359,7 +359,7 @@ class MainWindow(QWidget):
         """
         Selection changed event handler for the list widget.
         """
-        self.__delete_button.setDisabled(len(self.__list_widget.selectedIndexes()) == 0)
+        self.__delete_button.setDisabled(len(self.list_widget.selectedIndexes()) == 0)
 
     def __on_add_edit_text_changed(self, text: str) -> None:
         """
@@ -375,7 +375,7 @@ class MainWindow(QWidget):
         if self.__add_edit.text():
             item = QListWidgetItem(self.__add_edit.text())
             item.setFlags(item.flags() | Qt.ItemIsEditable)
-            self.__list_widget.addItem(item)
+            self.list_widget.addItem(item)
             self.__add_edit.clear()
 
     def __on_list_button_clicked(self) -> None:
@@ -388,8 +388,8 @@ class MainWindow(QWidget):
         """
         Clicked event handler for the delete button.
         """
-        for item in self.__list_widget.selectedItems():
-            self.__list_widget.takeItem(self.__list_widget.row(item))
+        for item in self.list_widget.selectedItems():
+            self.list_widget.takeItem(self.list_widget.row(item))
 
     def __set_autostart_check_box(self) -> None:
         """

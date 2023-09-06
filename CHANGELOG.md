@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Nothing
+### Security
+- Update GitPython to version 3.1.34
 
 ## [1.0.2] - 2022-05-09
 ### Fixed

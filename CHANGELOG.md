@@ -4,7 +4,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Security
-- Update GitPython to version 3.1.34
+- Update GitPython to version 3.1.37
 
 ## [1.0.2] - 2022-05-09
 ### Fixed

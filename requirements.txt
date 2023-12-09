@@ -10,7 +10,7 @@ lazy-object-proxy==1.7.1
 mccabe==0.7.0
 pefile==2021.9.3
 platformdirs==2.5.1
-pyinstaller==4.10
+pyinstaller==5.13.1
 pyinstaller-hooks-contrib==2022.3
 pylint==2.13.0
 pypiwin32==223
